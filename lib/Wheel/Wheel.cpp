@@ -1,4 +1,16 @@
 #include "Wheel.h"
+#include "Line.h"
+/*
+void IRAM_ATTR handlePulse() {
+  if( digitalRead(fb_pin) ){
+    timerhigh = micros();
+  }
+  else{
+    period = micros() - timerlow;
+    timerlow = micros();
+    dutycycle = ( timerlow - timerhigh ) / period;
+  }
+}*/
 
 // @brief initialize
 Wheel::Wheel(uint8_t control, uint8_t feedback){
@@ -6,6 +18,8 @@ Wheel::Wheel(uint8_t control, uint8_t feedback){
     fb_pin=feedback;
     pinMode(ctrl_pin, OUTPUT);
     pinMode(fb_pin, INPUT);
+    // attachInterrupt(digitalPinToInterrupt(fb_pin), handlePulse, CHANGE);
+
 }
 
 // @brief rotate by given speed

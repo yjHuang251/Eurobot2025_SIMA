@@ -1,41 +1,38 @@
 #include <Arduino.h>
 #include "Wheel.h"
+#include "Line.h"
 
-time_t run_time;
-Wheel wheel(17/*control*/, 18/*feedback*/);
+Wheel L_wheel(2/*control*/, 0/*feedback*/);
+Wheel R_wheel(15, 0);
+Line line(13, 12, 14, 27, 26);
+
+// time_t run_time;
+const int v_0=20;
 
 // put function declarations here:
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  // line.init();
+  L_wheel.control(v_0);
+  R_wheel.control(v_0);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  run_time=millis();
-  while(1){
-    wheel.control(140);
-    if((millis()-run_time)>5000) break;
-    Serial.println(wheel.getTheta());
+  line.PIDcontrol();
+  L_wheel.control(-1*(v_0*line.getLspd()));
+  R_wheel.control(v_0*line.getRspd());
+  /*for(int i=0;i<5;i++){
+    Serial.print(line.val[i]);
+    Serial.print(" ");
   }
-  delay(500);
-  run_time=millis();
-  while(1){
-    wheel.control(-100);
-    if((millis()-run_time)>3000) break;
-    Serial.println(wheel.getTheta());
-  }
-
-  while(1){
-    wheel.control(50, 120);
-    if(!wheel.ifTheta()){
-      wheel.ifThetaVal(false);
-      break;
-    }
-    Serial.println(wheel.getTheta());
-  }
-  delay(2000);
+  Serial.println();*/
+  // Serial.print("left: ");
+  // Serial.println(v_0+line.getLspd());
+  // Serial.print("right: ");
+  // Serial.println(v_0+line.getRspd());
 }
 
 // put function definitions here:
