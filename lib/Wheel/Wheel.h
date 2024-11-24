@@ -32,7 +32,7 @@ typedef class Wheel{
     
     const float duty_scale=1000.00;
     int turns=0;
-    float duty_cycle=0;
+    float duty_cycle=0.0;
     int theta=0;
     int angle=0;
     int pre_theta=0;

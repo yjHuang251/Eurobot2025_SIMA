@@ -1,50 +1,70 @@
 #include "Line.h"
 
 Line::Line(uint8_t p0, uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4){
-  pins[0]=p0; 
-  pins[1]=p1; 
+  pins[0]=p0;
+  pins[1]=p1;
   pins[2]=p2;
-  pins[3]=p3; 
+  pins[3]=p3;
   pins[4]=p4;
   for(int i=0;i<5;i++) {
     pinMode(pins[i], INPUT);
   }
+}
+
+void Line::init(){
   for(int i=0;i<5;i++) {
-    val[i]=analogRead(pins[i]);
+    val[i]=digitalRead(pins[i]);
   }
-  divide_line=((val[0]+val[2]+val[4])/3+(val[1]+val[3])/2)/2;
+  // divide_line=((val[0]+val[2]+val[4])/3+(val[1]+val[3])/2)/2;
 }
 
 void Line::PIDcontrol(){
   for(int i=0;i<5;i++){
-    val[i]=analogRead(pins[i]);
-    val[i]=(val[i]>divide_line)?0:1;
+    val[i]=!digitalRead(pins[i]);
+    Serial.print(val[i]);
+    Serial.print(" ");
+    // val[i]=(val[i]>threshold[i])?1:0;
   }
+  Serial.println();
 
-  if(val[0]==0 && val[1]==1 && val[2]==0 && val[3]==1 && val[4]==0){
+  error_last = error_now;
+  error_now = 0;
+  d_error = 0;
+  r_spd = val[3]+val[4]+val[2];
+  l_spd = val[1]+val[0]+val[2];
+
+  /*if( val[0]==0 &&  val[1]==0 && val[2]==1 && val[3]==0  && val[4]==0 ){
     error_now = 0;
+    Serial.println("1");
    }
-  else if(val[0]==1 && val[1]==0 && val[2]==1 && val[3]==0 && val[4]==0){
+  else if(  val[0]==0 &&  val[1]==0 && val[2]==0 && val[3]==1  && val[4]==0 ){
     error_now = 1;
     d_error = error_now - error_last;
     l_spd = K_P * error_now - K_D * d_error;
+    //r_spd = 0;
+    Serial.println("2");
   }
-  else if(val[0]==0 && val[1]==1 && val[2]==0 && val[3]==0 && val[4]==0){
+  else if( val[0]==0 &&  val[1]==0 && val[2]==0 && val[3]==0  && val[4]==1 ){
     error_now = 2;
     d_error = error_now - error_last;
     l_spd = K_P * error_now - K_D * d_error;
+    Serial.println("3");
   }
-  else if(val[0]==1 && val[1]==0 && val[2]==0 && val[3]==0 && val[4]==0){
-    error_now = 3;
-    d_error = error_now - error_last;
-    l_spd = K_P * error_now - K_D * d_error;
-  }
-  else if(val[0]==0 && val[1]==0 && val[2]==1 && val[3]==0 && val[4]== 1){
+   
+  else if( val[0]==0 && val[1]==1 && val[2]==0 && val[3]==0  && val[4]==0){
     error_now = -1;
     d_error = error_now - error_last;
     r_spd = -K_P * error_now + K_D * d_error;
+    Serial.println("4");
+  } 
+  else if( val[0]==1 &&  val[1]==0 && val[2]==0 && val[3]==0  && val[4]==0 ){
+    error_now = -2;
+    d_error = error_now - error_last;
+    r_spd = -K_P * error_now + K_D * d_error;
+    Serial.println("5");
   }
-  else if(val[0]==0 && val[1]==0 && val[2]==0 && val[3]==1 && val[4]==0){
+  /*
+  else if( val[0]==0 &&  val[1]==0 && val[2]==0 && val[3]==1  && val[4]==0 ){
     error_now = -2;
     d_error = error_now - error_last;
     r_spd = -K_P * error_now + K_D * d_error;
@@ -53,8 +73,8 @@ void Line::PIDcontrol(){
     error_now = -3;
     d_error = error_now - error_last;
     r_spd = -K_P * error_now + K_D * d_error;
-  }
-  error_last=error_now;
+  }*/
+  // error_last=error_now;
 }
 
 int Line::getLspd(){
@@ -65,7 +85,7 @@ int Line::getRspd(){
   return r_spd;
 }
 
-/*
+ /*
 int r_spd = 0;
 int l_spd = 0;
 
