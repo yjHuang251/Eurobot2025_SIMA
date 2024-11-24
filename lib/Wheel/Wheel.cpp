@@ -1,4 +1,5 @@
 #include "Wheel.h"
+#include "Line.h"
 
 // @brief initialize
 Wheel::Wheel(uint8_t control, uint8_t feedback){

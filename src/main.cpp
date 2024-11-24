@@ -1,41 +1,28 @@
 #include <Arduino.h>
 #include "Wheel.h"
+#include "Line.h"
+
+Wheel L_wheel(6/*control*/, 7/*feedback*/);
+Wheel R_wheel(8, 9);
+Line line(1, 2, 3, 4, 5);
 
 time_t run_time;
-Wheel wheel(17/*control*/, 18/*feedback*/);
+const int v_0=30;
 
 // put function declarations here:
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  L_wheel.control(50);
+  R_wheel.control(v_0);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  run_time=millis();
-  while(1){
-    wheel.control(140);
-    if((millis()-run_time)>5000) break;
-    Serial.println(wheel.getTheta());
-  }
-  delay(500);
-  run_time=millis();
-  while(1){
-    wheel.control(-100);
-    if((millis()-run_time)>3000) break;
-    Serial.println(wheel.getTheta());
-  }
-
-  while(1){
-    wheel.control(50, 120);
-    if(!wheel.ifTheta()){
-      wheel.ifThetaVal(false);
-      break;
-    }
-    Serial.println(wheel.getTheta());
-  }
-  delay(2000);
+  line.PIDcontrol();
+  L_wheel.control(v_0+line.getLspd());
+  R_wheel.control(v_0+line.getRspd());
 }
 
 // put function definitions here:
