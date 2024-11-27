@@ -4,10 +4,10 @@
 
 Wheel L_wheel(2/*control*/, 0/*feedback*/);
 Wheel R_wheel(15, 0);
-Line line(13, 12, 14, 27, 26);
+Line line(13, 25, 14, 27, 26);
 
 // time_t run_time;
-const int v_0=20;
+const int v_0=70;
 
 // put function declarations here:
 
