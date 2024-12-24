@@ -6,17 +6,13 @@ Line::Line(uint8_t p0, uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4){
   pins[2]=p2;
   pins[3]=p3;
   pins[4]=p4;
-  for(int i=0;i<5;i++) {
-    pinMode(pins[i], INPUT);
-  }
 }
 
 void Line::init(){
   for(int i=0;i<5;i++) {
-    val[i]=digitalRead(pins[i]);
+    pinMode(pins[i], INPUT);
   }
 }
-
 void Line::PIDcontrol(){
   for(int i=0;i<5;i++){
     val[i]=digitalRead(pins[i]);

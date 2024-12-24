@@ -12,35 +12,39 @@
 
 typedef class Wheel{
     public:
-    Wheel(uint8_t, uint8_t);
+    Wheel(uint8_t, uint8_t, int);
     void control(int);
-    void control(int, int);
+    void thetaControl(int, int);
     void ifThetaVal(bool);
     int getTheta();
     int getAngle();
     bool ifTheta();
-    void feedback();
+    static void IRAM_ATTR handlePulse();
+    static void IRAM_ATTR timCallback();
 
     private:
-    // void feedback();
+    void feedback();
 
-    uint8_t ctrl_pin=0;
-    uint8_t fb_pin=0;
+    static uint8_t ctrl_pin;
+    static uint8_t fb_pin;
 
-    int mu_s=1500;
+    int mu_s=1500; //
     bool if_theta=false;
+    static bool cpin_state;
+    static int ctrl_high;
+    static int ctrl_low;
+    static hw_timer_t *timer;
     
     const float duty_scale=1000.00;
     int turns=0;
-    float duty_cycle=0.0;
+    static float duty_cycle;
     int theta=0;
     int angle=0;
     int pre_theta=0;
-    unsigned long t_high;
-    unsigned long t_low;
-
-    int k=0;
-
+    static int period;
+    static unsigned long fb_high;
+    static unsigned long fb_low;
+    
 }Wheel;
 
 #endif
