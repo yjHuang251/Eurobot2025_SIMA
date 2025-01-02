@@ -4,15 +4,18 @@
 uint8_t Wheel::ctrl_pin=0;
 uint8_t Wheel::fb_pin=0;
 
-int Wheel::ctrl_high=1500;
-int Wheel::ctrl_low=20000-ctrl_high;
+volatile int Wheel::ctrl_high=1500;
+volatile int Wheel::ctrl_low=20000-ctrl_high;
 bool Wheel::cpin_state=LOW;
 hw_timer_t* Wheel::timer=NULL;
+portMUX_TYPE Wheel::timer_mux=portMUX_INITIALIZER_UNLOCKED;
 
-float Wheel::duty_cycle=0;
+volatile float Wheel::duty_cycle=0;
 int Wheel::period=0;
-unsigned long Wheel::fb_high=0;
-unsigned long Wheel::fb_low=0;
+volatile unsigned long Wheel::fb_high=0;
+volatile unsigned long Wheel::fb_low=0;
+
+int Wheel::n=0;
 
 // @brief initialize
 Wheel::Wheel(uint8_t control, uint8_t feedback, int tim){
@@ -20,7 +23,7 @@ Wheel::Wheel(uint8_t control, uint8_t feedback, int tim){
     fb_pin=feedback;
     pinMode(ctrl_pin, OUTPUT);
     pinMode(fb_pin, INPUT);
-    attachInterrupt(digitalPinToInterrupt(fb_pin), handlePulse, CHANGE);
+    attachInterrupt(fb_pin, &handlePulse, CHANGE);
     timer=timerBegin(tim, 80, true);// timer num, MWDT clock period = 12.5 ns * TIMGn_Tx_WDT_CLK_PRESCALE -> 12.5 ns * 80 -> 1000 ns = 1 us, countUp
     timerAttachInterrupt(timer, &timCallback, true);
     timerAlarmEnable(timer);
@@ -49,15 +52,18 @@ void Wheel::control(int rpm){
     if(rpm==0) ctrl_high=1500;
     else if(rpm>0){
         if(rpm>140) ctrl_high=1280;
-        else ctrl_high=map(rpm, 1480, 1280, 0, 140);
+        else ctrl_high=1480-rpm*(1480-1280)/140;
     }
     else{
         if(rpm<-140) ctrl_high=1720;
-        else ctrl_high=map(rpm, 0, -140, 1520, 1720);
+        else ctrl_high=1520+rpm*(1720-1520)/140;
     }
     ctrl_low=20000-ctrl_high;
     cpin_state=LOW;
-    timerAlarmWrite(timer, ctrl_high, true);
+    // if(mu_s!=ctrl_high){
+        timerAlarmWrite(timer, ctrl_high, true);
+        // mu_s=ctrl_high;
+    // }
 }
 
 // @brief rotate to given angle by given speed
@@ -112,18 +118,23 @@ bool Wheel::ifTheta(){
     return if_theta;
 }
 
-void IRAM_ATTR Wheel::handlePulse() {
-  if(!digitalRead(fb_pin)){
-    fb_high=micros();
-  }
-  else{
-    period=int(micros()-fb_low);
-    fb_low=micros();
-    duty_cycle=(fb_high-fb_low)/period;
-  }
+void IRAM_ATTR Wheel::handlePulse(){
+    portENTER_CRITICAL_ISR(&timer_mux);
+    n++;
+    /*
+    if(!digitalRead(fb_pin)){
+        fb_high=micros();
+    }
+    else{
+        period=int(micros()-fb_low);
+        fb_low=micros();
+        // duty_cycle=(fb_high-fb_low)/period;
+    }*/
+    portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
 void IRAM_ATTR Wheel::timCallback(){
+    portENTER_CRITICAL_ISR(&timer_mux);
     if(cpin_state==HIGH){
         cpin_state=!cpin_state;
         digitalWrite(ctrl_pin, cpin_state);
@@ -134,10 +145,12 @@ void IRAM_ATTR Wheel::timCallback(){
         digitalWrite(ctrl_pin, cpin_state);
         timerAlarmWrite(timer, ctrl_high, true);
     }
+    portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
 // @brief read duty cycle to compute angle
 void Wheel::feedback(){
+    duty_cycle=(fb_high-fb_low)/period;
     theta=(UNITS_FC-1)-(float)((duty_cycle-MIN_DC)*UNITS_FC)/(MAX_DC-MIN_DC+1);
     
     if(theta<0) theta=0;

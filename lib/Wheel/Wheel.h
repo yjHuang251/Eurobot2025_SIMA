@@ -10,7 +10,7 @@
 #define Q1_MAX 90
 #define Q4_MIN 270
 
-typedef class Wheel{
+class Wheel{
     public:
     Wheel(uint8_t, uint8_t, int);
     void control(int);
@@ -22,29 +22,39 @@ typedef class Wheel{
     static void IRAM_ATTR handlePulse();
     static void IRAM_ATTR timCallback();
 
+    static uint8_t fb_pin;
+    static volatile int ctrl_high;
+    static volatile int ctrl_low;
+    static volatile float duty_cycle;
+    static volatile unsigned long fb_high;
+    static volatile unsigned long fb_low;
+
+    static int n;
+
     private:
     void feedback();
 
     static uint8_t ctrl_pin;
-    static uint8_t fb_pin;
+    // static uint8_t fb_pin;
 
     int mu_s=1500; //
     bool if_theta=false;
     static bool cpin_state;
-    static int ctrl_high;
-    static int ctrl_low;
+    // static int ctrl_high;
+    // static int ctrl_low;
     static hw_timer_t *timer;
+    static portMUX_TYPE timer_mux;
     
     const float duty_scale=1000.00;
     int turns=0;
-    static float duty_cycle;
+    // static float duty_cycle;
     int theta=0;
     int angle=0;
     int pre_theta=0;
     static int period;
-    static unsigned long fb_high;
-    static unsigned long fb_low;
+    // static unsigned long fb_high;
+    // static unsigned long fb_low;
     
-}Wheel;
+};
 
 #endif
