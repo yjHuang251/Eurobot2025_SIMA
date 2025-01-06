@@ -94,7 +94,7 @@ bool VL53L0X::init(bool io_2v8)
   // VL53L0X_DataInit() end
 
   // VL53L0X_StaticInit() begin
-123
+
   uint8_t spad_count;
   bool spad_type_is_aperture;
   if (!getSpadInfo(&spad_count, &spad_type_is_aperture)) { return false; }
