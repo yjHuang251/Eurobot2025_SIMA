@@ -2,6 +2,7 @@
 #define WHEEL_H
 
 #include <Arduino.h>
+#include <iostream>
 
 #define UNITS_FC 360
 #define DUTY_SCALE 1000

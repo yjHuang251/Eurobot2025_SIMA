@@ -23,7 +23,7 @@ Wheel::Wheel(uint8_t control, uint8_t feedback, int tim){
     fb_pin=feedback;
     pinMode(ctrl_pin, OUTPUT);
     pinMode(fb_pin, INPUT);
-    attachInterrupt(fb_pin, &handlePulse, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(fb_pin), &handlePulse, CHANGE);
     timer=timerBegin(tim, 80, true);// timer num, MWDT clock period = 12.5 ns * TIMGn_Tx_WDT_CLK_PRESCALE -> 12.5 ns * 80 -> 1000 ns = 1 us, countUp
     timerAttachInterrupt(timer, &timCallback, true);
     timerAlarmEnable(timer);
@@ -128,7 +128,7 @@ void IRAM_ATTR Wheel::handlePulse(){
     else{
         period=int(micros()-fb_low);
         fb_low=micros();
-        // duty_cycle=(fb_high-fb_low)/period;
+        // duty_cycle=(fb_low-fb_high)/period;
     }*/
     portEXIT_CRITICAL_ISR(&timer_mux);
 }
