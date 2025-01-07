@@ -30,9 +30,12 @@ class Wheel{
     static volatile unsigned long fb_high;
     static volatile unsigned long fb_low;
 
-    static int n;
+    static volatile int n;
 
     private:
+    static Wheel* instance[2];
+    static int instance_cnt;
+
     void feedback();
 
     static uint8_t ctrl_pin;

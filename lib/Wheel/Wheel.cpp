@@ -15,7 +15,9 @@ int Wheel::period=0;
 volatile unsigned long Wheel::fb_high=0;
 volatile unsigned long Wheel::fb_low=0;
 
-int Wheel::n=0;
+volatile int Wheel::n=0;
+
+int Wheel::instance_cnt=0;
 
 // @brief initialize
 Wheel::Wheel(uint8_t control, uint8_t feedback, int tim){
@@ -23,7 +25,8 @@ Wheel::Wheel(uint8_t control, uint8_t feedback, int tim){
     fb_pin=feedback;
     pinMode(ctrl_pin, OUTPUT);
     pinMode(fb_pin, INPUT);
-    attachInterrupt(digitalPinToInterrupt(fb_pin), &handlePulse, CHANGE);
+    if(instance_cnt<2) instance[instance_cnt++]=this;
+    // attachInterrupt(digitalPinToInterrupt(fb_pin), &handlePulse, CHANGE);
     timer=timerBegin(tim, 80, true);// timer num, MWDT clock period = 12.5 ns * TIMGn_Tx_WDT_CLK_PRESCALE -> 12.5 ns * 80 -> 1000 ns = 1 us, countUp
     timerAttachInterrupt(timer, &timCallback, true);
     timerAlarmEnable(timer);
