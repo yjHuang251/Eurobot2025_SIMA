@@ -11,30 +11,34 @@
 #define Q1_MAX 90
 #define Q4_MIN 270
 
+enum TIM_NUMBER{
+    TIM_NUM_L=0,
+    TIM_NUM_R=2
+};
+
 class Wheel{
     public:
-    Wheel(uint8_t, uint8_t, int);
+    Wheel(uint8_t, uint8_t);
     uint8_t EXTIpin();
+    hw_timer_t* getTim();
+    bool getIfData();
+    void init(uint8_t);
     void control(int);
     void thetaControl(int, int);
     void handlePulse();
-    static void IRAM_ATTR timCallback();
-    
+    void sendPulse();
     void feedback();
 
     private:
-    // static Wheel* instance[2];
-    // static int instance_cnt;
-
-    static uint8_t ctrl_pin;
-    static uint8_t fb_pin;
+    uint8_t ctrl_pin;
+    uint8_t fb_pin;
 
     int mu_s=1500;
-    static bool cpin_state;
-    static volatile int ctrl_high;
-    static volatile int ctrl_low;
-    static hw_timer_t *timer;
-    static portMUX_TYPE timer_mux;
+    volatile bool cpin_state;
+    volatile int ctrl_high=0;
+    volatile int ctrl_low=0;
+    hw_timer_t *timer=NULL;
+    portMUX_TYPE timer_mux=portMUX_INITIALIZER_UNLOCKED;
 
     volatile unsigned long fb_falling=0;
     volatile unsigned long fb_rising=0;

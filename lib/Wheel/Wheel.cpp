@@ -1,49 +1,32 @@
 #include "Wheel.h"
 #include "Line.h"
 
-uint8_t Wheel::ctrl_pin=0;
-uint8_t Wheel::fb_pin=0;
-
-volatile int Wheel::ctrl_high=1500;
-volatile int Wheel::ctrl_low=20000-ctrl_high;
-bool Wheel::cpin_state=LOW;
-hw_timer_t* Wheel::timer=NULL;
-portMUX_TYPE Wheel::timer_mux=portMUX_INITIALIZER_UNLOCKED;
-
 // @brief initialize
-Wheel::Wheel(uint8_t control, uint8_t feedback, int tim){
-    ctrl_pin=control;
-    fb_pin=feedback;
-    pinMode(ctrl_pin, OUTPUT);
-    pinMode(fb_pin, INPUT);
-    timer=timerBegin(tim, 80, true);// timer num, MWDT clock period = 12.5 ns * TIMGn_Tx_WDT_CLK_PRESCALE -> 12.5 ns * 80 -> 1000 ns = 1 us, countUp
-    timerAttachInterrupt(timer, &timCallback, true);
-    timerAlarmEnable(timer);
-}
+Wheel::Wheel(uint8_t control, uint8_t feedback):
+    ctrl_pin(control), fb_pin(feedback){}
 
 uint8_t Wheel::EXTIpin(){
     return digitalPinToInterrupt(fb_pin);
 }
 
+hw_timer_t* Wheel::getTim(){
+    return timer;
+}
+
+void Wheel::init(uint8_t tim){
+    pinMode(ctrl_pin, OUTPUT);
+    pinMode(fb_pin, INPUT);
+    timer=timerBegin(tim, 80, true);// timer num, MWDT clock period = 12.5 ns * TIMGn_Tx_WDT_CLK_PRESCALE -> 12.5 ns * 80 -> 1000 ns = 1 us, countUp
+    timerAlarmEnable(timer);
+}
+
+bool Wheel::getIfData(){
+    return if_data;
+}
+
 // @brief rotate by given speed
 void Wheel::control(int rpm){
     // no load, input voltage=6.3
-    /* --- first version: use delayMicroseocnds --- */
-    /*
-    if(rpm==0) mu_s=1500;
-    else if(rpm>0){
-        if(rpm>140) mu_s=1280;
-        else mu_s=map(rpm, 0, 140, 1480, 1280);
-    }
-    else{
-        if(rpm<-140) mu_s=1720;
-        else mu_s=map(rpm, 0, -140, 1520, 1720);
-    }
-
-    digitalWrite(ctrl_pin, HIGH);
-    delayMicroseconds(mu_s);
-    digitalWrite(ctrl_pin, LOW);
-    delayMicroseconds(20000-mu_s);*/
 
     if(rpm==0) ctrl_high=1500;
     else if(rpm>0){
@@ -65,24 +48,6 @@ void Wheel::control(int rpm){
 // @brief rotate to given angle by given speed
 void Wheel::thetaControl(int rpm, int theta){
     // no load, input voltage=6.3
-    /* --- first version: use delayMicroseocnds --- */
-    /*
-    if(rpm==0) mu_s=1500;
-    else if(rpm>0){
-        if(rpm>140) mu_s=1280;
-        else mu_s=map(rpm, 1480, 1280, 0, 140);
-    }
-    else{
-        if(rpm<-140) mu_s=1720;
-        else mu_s=map(rpm, 0, -140, 1520, 1720);
-    }
-
-    digitalWrite(ctrl_pin, HIGH);
-    delayMicroseconds(mu_s);
-    digitalWrite(ctrl_pin, LOW);
-    delayMicroseconds(20000-mu_s);
-    feedback();
-    if(abs(theta-getTheta())<5) if_theta=true;*/
 
     if(rpm==0) ctrl_high=1500;
     else if(rpm>0){
@@ -95,7 +60,10 @@ void Wheel::thetaControl(int rpm, int theta){
     }
     ctrl_low=20000-ctrl_high;
     cpin_state=LOW;
-    timerAlarmWrite(timer, ctrl_high, true);
+    if(mu_s!=ctrl_high){
+        timerAlarmWrite(timer, ctrl_high, true);
+        mu_s=ctrl_high;
+    }
 }
 
 void Wheel::handlePulse(){
@@ -116,27 +84,20 @@ void Wheel::handlePulse(){
     portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
-void IRAM_ATTR Wheel::timCallback(){
+void Wheel::sendPulse(){
     portENTER_CRITICAL_ISR(&timer_mux);
-    // if(cpin_state==HIGH){
-    //     cpin_state=!cpin_state;
-    //     digitalWrite(ctrl_pin, cpin_state);
-    //     timerAlarmWrite(timer, ctrl_low, true);
-    // }
-    // else{
-    //     cpin_state=!cpin_state;
-    //     digitalWrite(ctrl_pin, cpin_state);
-    //     timerAlarmWrite(timer, ctrl_high, true);
-    // }
+
     cpin_state=!cpin_state;
     digitalWrite(ctrl_pin, cpin_state);
     timerAlarmWrite(timer, cpin_state?ctrl_high: ctrl_low, true);
+    timerAlarmEnable(timer);
+
     portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
 // @brief read duty cycle to compute angle
 void Wheel::feedback(){
-    if(if_data){
+    // if(if_data){
         duty_cycle=float(fb_high)/float(period);
         theta=(UNITS_FC-1)-(float)((duty_cycle-MIN_DC)*UNITS_FC)/(MAX_DC-MIN_DC+1);
         
@@ -150,5 +111,5 @@ void Wheel::feedback(){
         else if(turns<0) angle=((turns+1)*UNITS_FC)-(UNITS_FC-theta);
 
         pre_theta=theta;
-    }
+    // }
 }
