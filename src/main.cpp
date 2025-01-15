@@ -3,7 +3,7 @@
 #include "Line.h"
 
 const int v_0=50;
-bool odom_ok[2]={false, false};
+volatile bool if_odom[2]={false, false};
 
 Wheel L_wheel(2/*control*/, 15/*feedback*/);
 Wheel R_wheel(23, 22);
@@ -39,25 +39,44 @@ void loop() {
   // L_wheel.control(-1*(v_0*line.getLspd()));
   // R_wheel.control(v_0*line.getRspd());
   // L_wheel.control(20);
-  if(L_wheel.getIfData()&&R_wheel.getIfData()){
+  // if(L_wheel.getIfData()){
+  //   L_wheel.feedback();
+  //   Serial.print("[ ");
+  //   Serial.print(micros()/1000000.00);
+  //   Serial.print(" s ] ");
+  //   Serial.print("L wheel theta: ");
+  //   Serial.println(L_wheel.theta);
+  // }
+  // if(R_wheel.getIfData()){
+  //   R_wheel.feedback();
+  //   Serial.print("[ ");
+  //   Serial.print(micros()/1000000.00);
+  //   Serial.print(" s ] ");
+  //   Serial.print("R wheel theta: ");
+  //   Serial.println(R_wheel.theta);
+  // }
+  if(if_odom[0]&&if_odom[1]){
     L_wheel.feedback();
     R_wheel.feedback();
-    // Serial.print("L wheel duty cycle: ");
-    // Serial.print(L_wheel.duty_cycle);
-    // Serial.print(", R wheel duty cycle: ");
-    // Serial.println(R_wheel.duty_cycle);
+    Serial.print("[ ");
+    Serial.print(micros()/1000000.00);
+    Serial.print(" s ] ");
+    Serial.print("L wheel theta: ");
+    Serial.print(L_wheel.theta);
+    Serial.print(", R wheel theta: ");
+    Serial.println(R_wheel.theta);
   }
-  vTaskDelay(portMAX_DELAY);
+  // vTaskDelay(portMAX_DELAY);
 }
 
 // put function definitions here:
 
 void IRAM_ATTR LhandlePulse(){
-  L_wheel.handlePulse();
+  if_odom[0]=L_wheel.handlePulse();
 }
 
 void IRAM_ATTR RhandlePulse(){
-  R_wheel.handlePulse();
+  if_odom[1]=R_wheel.handlePulse();
 }
 
 void IRAM_ATTR LtimCallback(){
