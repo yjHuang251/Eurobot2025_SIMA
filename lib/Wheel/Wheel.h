@@ -35,9 +35,6 @@ class Wheel{
     void sendPulse();
     void feedback();
 
-    volatile float duty_cycle=0.0;
-    float theta=0; // [0,2*pi)
-
     private:
     uint8_t ctrl_pin;
     uint8_t fb_pin;
@@ -53,12 +50,11 @@ class Wheel{
     volatile unsigned long fb_rising=0;
     volatile int fb_high=0;
     volatile int period=0;
-    // volatile float duty_cycle=0.0;
-    volatile bool if_data=false;
+    volatile float duty_cycle=0.0;
     
     const float duty_scale=1000.00;
     int turns=0;
-    // int theta=0;
+    float theta=0.0; // [0,2*pi)
     int angle=0; // accumulated
     int pre_theta=0;
     int dt=0;

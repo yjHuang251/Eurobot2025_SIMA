@@ -13,6 +13,11 @@ class Chassis{
     void forwardKinematics();
     void updatePose();
 
+    time_t now=0;
+    float x=0.0;
+    float y=0.0;
+    float theta=0.0;
+
     private:
     Wheel left_wheel;
     Wheel right_wheel;
@@ -20,11 +25,7 @@ class Chassis{
     float v_x=0.0;
     float v_y=0.0;
     float omega=0.0;
-    float x=0.0;
-    float y=0.0;
-    float theta=0.0;
 
-    time_t now=0;
     time_t last=0;
     int dt=0;
 };
