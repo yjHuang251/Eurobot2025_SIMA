@@ -21,8 +21,8 @@ void Line::init(){
 void Line::PIDcontrol(){
   for(int i=0;i<5;i++){
     val[i]=!digitalRead(pins[i]);
-    Serial.print(val[i]);
-    Serial.print(" ");
+    //Serial.print(val[i]);
+    //Serial.print(" ");
     // val[i]=(val[i]>threshold[i])?1:0;
   }
   Serial.println();

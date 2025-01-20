@@ -34,33 +34,58 @@ void Wheel::control(int rpm){
         if(rpm<-140) mu_s=1720;
         else mu_s=map(rpm, 0, -140, 1520, 1720);
     }
-
-    digitalWrite(ctrl_pin, HIGH);
-    delayMicroseconds(mu_s);
-    digitalWrite(ctrl_pin, LOW);
-    delayMicroseconds(20000-mu_s);
+    time_t time1 = micros();
+    
+        digitalWrite(ctrl_pin, HIGH);
+        delayMicroseconds(mu_s);
+        digitalWrite(ctrl_pin, LOW);
+        delayMicroseconds(20000-mu_s);
+    
 }
+
+Wheel& Wheel::operator=(const Wheel& other) {
+    if (this == &other) {
+        return *this; 
+    }
+
+    
+    this->ctrl_pin = other.ctrl_pin;
+    this->fb_pin = other.fb_pin;
+    this->mu_s = other.mu_s;
+    this->if_theta = other.if_theta;
+    this->turns = other.turns;
+    this->duty_cycle = other.duty_cycle;
+    this->theta = other.theta;
+    this->angle = other.angle;
+    this->pre_theta = other.pre_theta;
+    this->t_high = other.t_high;
+    this->t_low = other.t_low;
+    this->k = other.k;
+
+    return *this;
+}
+
 
 // @brief rotate to given angle by given speed
-void Wheel::control(int rpm, int theta){
-    // no load, input voltage=6.3
-    if(rpm==0) mu_s=1500;
-    else if(rpm>0){
-        if(rpm>140) mu_s=1280;
-        else mu_s=map(rpm, 1480, 1280, 0, 140);
-    }
-    else{
-        if(rpm<-140) mu_s=1720;
-        else mu_s=map(rpm, 0, -140, 1520, 1720);
-    }
+// void Wheel::control(int rpm, int theta){
+//     // no load, input voltage=6.3
+//     if(rpm==0) mu_s=1500;
+//     else if(rpm>0){
+//         if(rpm>140) mu_s=1280;
+//         else mu_s=map(rpm, 1480, 1280, 0, 140);
+//     }
+//     else{
+//         if(rpm<-140) mu_s=1720;
+//         else mu_s=map(rpm, 0, -140, 1520, 1720);
+//     }
 
-    digitalWrite(ctrl_pin, HIGH);
-    delayMicroseconds(mu_s);
-    digitalWrite(ctrl_pin, LOW);
-    delayMicroseconds(20000-mu_s);
-    feedback();
-    if(abs(theta-getTheta())<5) if_theta=true;
-}
+//     digitalWrite(ctrl_pin, HIGH);
+//     delayMicroseconds(mu_s);
+//     digitalWrite(ctrl_pin, LOW);
+//     delayMicroseconds(20000-mu_s);
+//     feedback();
+//     if(abs(theta-getTheta())<5) if_theta=true;
+// }
 
 void Wheel::ifThetaVal(bool state){
     if_theta=state;

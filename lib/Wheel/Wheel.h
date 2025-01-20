@@ -13,13 +13,14 @@
 typedef class Wheel{
     public:
     Wheel(uint8_t, uint8_t);
+    // void control(int);
     void control(int);
-    void control(int, int);
     void ifThetaVal(bool);
     int getTheta();
     int getAngle();
     bool ifTheta();
     void feedback();
+    Wheel& operator=(const Wheel& other);
 
     private:
     // void feedback();
