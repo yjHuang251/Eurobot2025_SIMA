@@ -13,25 +13,39 @@ Line::Line(uint8_t p0, uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4){
 
 void Line::init(){
   for(int i=0;i<5;i++) {
-    val[i]=digitalRead(pins[i]);
+    val[i]=analogRead(pins[i]);
   }
   // divide_line=((val[0]+val[2]+val[4])/3+(val[1]+val[3])/2)/2;
 }
 
 void Line::PIDcontrol(){
-  for(int i=0;i<5;i++){
-    val[i]=!digitalRead(pins[i]);
-    Serial.print(val[i]);
+  /*for(int i=0;i<5;i++){
+    
+    Serial.print(analogRead(pins[i]));
     Serial.print(" ");
     // val[i]=(val[i]>threshold[i])?1:0;
-  }
+    if(i==0 || i==3){
+      if(val[i]==1) lastblack = i;
+    }
+  }*/
+  val[1]=(analogRead(pins[1])>=120)? 1:0;
+  if(val[1]==1) lastblack = 1;
+  val[3]=(analogRead(pins[3])>=200)? 1:0;
+  if(val[3]==1) lastblack = 3;
+  Serial.print(analogRead(pins[1]));
+  Serial.print(" ");
+  Serial.print(analogRead(pins[3]));
+  Serial.print(" ");
   Serial.println();
-
+  //if(val[1]==1 && val[3]==1) stop = true;
+  if(analogRead(pins[1])+20>=1000 || analogRead(pins[3])+20>=1000) stop = false;
+  //if(val[1]==0 && val[3]==0) val[lastblack] = 1;
+  //Serial.println(stop);
   error_last = error_now;
   error_now = 0;
   d_error = 0;
-  r_spd = val[3]+val[4]+val[2];
-  l_spd = val[1]+val[0]+val[2];
+  l_spd = val[3];
+  r_spd = val[1];
 
   /*if( val[0]==0 &&  val[1]==0 && val[2]==1 && val[3]==0  && val[4]==0 ){
     error_now = 0;

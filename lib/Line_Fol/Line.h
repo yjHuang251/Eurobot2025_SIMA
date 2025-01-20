@@ -12,6 +12,9 @@ typedef class Line{
     int getLspd();
     int getRspd();
     int val[5]={0};
+    bool stop = false;
+    int lastblack;
+    int last_lastblack;
     
     private:
     int l_spd=0;
