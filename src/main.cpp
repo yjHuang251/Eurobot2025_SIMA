@@ -53,7 +53,7 @@ void setup() {
   sensor_M.setAddress(0x29);
   digitalWrite(XSHUT3, HIGH);
   delay(10);
-  sensor_L.init();
+  sensor_R.init();
   sensor_R.setAddress(0x2A);
   sensor_L.setTimeout(500);
   sensor_M.setTimeout(500);
