@@ -3,23 +3,25 @@
 #include <Arduino.h>
 #include <QTRSensors.h>
 #include <vector>
+#include <iostream>
 #define SensorCount 8
 
 typedef class LINE{
     public:
-        LINE (std::vector<uint16_t> pins) : LMspeed(0), RMspeed(0){
-            uint16_t cnt = 0;
-            for(auto i : pins){
-                sensorValues[cnt] = (const uint16_t)i;
-                cnt++;
-            }
+        LINE () : LMspeed(0), RMspeed(0){
+            // for(uint8_t i = 0; i < SensorCount; i++){
+            //     std::cout<<pins[i]<<" ";
+            // }
+            // std::cout<<'\n';
+            qtr.setTypeAnalog();
+            qtr.setSensorPins((const uint8_t[]){35,32,33,25,26,27,14,12}, SensorCount);
         }
         void init();
         void PIDcontrol(const double &KP, const double &KD, const double &v0);
         void print();
         double getLspd();
         double getRspd();
-        ~LINE(){free(sensorValues);}
+        ~LINE(){};
     private:
         QTRSensors qtr;
         uint16_t sensorValues[SensorCount];

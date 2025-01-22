@@ -1,8 +1,6 @@
 #include "Line.h"
 
 void LINE::init(){
-  qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t*)sensorValues, SensorCount);
   for(uint16_t i = 0; i < 250; i++){
     qtr.calibrate();
     delay(20);
@@ -12,9 +10,15 @@ void LINE::init(){
 void LINE::PIDcontrol(const double &KP, const double &KD, const double &v0){
   static uint16_t lastError = 0;
 
-  int16_t position = qtr.readLineBlack(sensorValues);
+  uint16_t sensor[8];
+  uint16_t position = qtr.readLineBlack(sensor);
+  for(uint16_t i = 0; i < 8; i++){
+    Serial.print(sensor[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
 
-  int16_t error = position - 1000;
+  uint16_t error = position - 1000;
   double motorSpeed = KP * error + KD * (error - lastError);
   lastError = error;
 
