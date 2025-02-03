@@ -5,29 +5,32 @@
 #include "Wheel.h"
 #include "math.h"
 
-#define CAR_RADIUS 100
-
 class Chassis{
     public:
-    Chassis(Wheel, Wheel);
+    Chassis(Wheel*, Wheel*);
     void forwardKinematics();
     void updatePose();
 
-    time_t now=0;
-    float x=0.0;
-    float y=0.0;
-    float theta=0.0;
+    Wheel* left_wheel;
+    Wheel* right_wheel;
+
+    float v_x=0.0; // mm/s
+    // float v_y=0.0; // mm/s
+    float omega=0.0; // rad/s
+    unsigned long now=0; // mu_s
+    float x=0.0; // mm
+    float y=0.0; // mm
+    float theta=0.0; // rad
+
+    unsigned long last=0;
+    int dt=0;
 
     private:
-    Wheel left_wheel;
-    Wheel right_wheel;
+    const float car_radius=60.75; // mm
+    
 
-    float v_x=0.0;
-    float v_y=0.0;
-    float omega=0.0;
-
-    time_t last=0;
-    int dt=0;
+    // unsigned long last=0;
+    // int dt=0;
 };
 
 #endif
