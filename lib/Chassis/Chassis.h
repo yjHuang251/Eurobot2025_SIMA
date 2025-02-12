@@ -25,8 +25,10 @@ class Chassis{
     unsigned long last=0;
     int dt=0;
 
+    const float car_radius=45.5; // mm
+
     private:
-    const float car_radius=60.75; // mm
+    // const float car_radius=60.75; // mm
     
 
     // unsigned long last=0;

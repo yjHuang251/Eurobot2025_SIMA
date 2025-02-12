@@ -11,6 +11,8 @@
 #define Q1_MAX 0.25*UNITS_FC
 #define Q4_MIN 0.75*UNITS_FC
 
+const double wel_radius=23.75; // mm
+
 enum TIM_NUMBER{
     TIM_NUM_L=0,
     TIM_NUM_R=2
@@ -29,7 +31,7 @@ class Wheel{
     Wheel_Info getCarInfo();
     bool getIfData();
     void control(int, int);
-    void thetaControl(int, int);
+    void thetaControl(int, int, int);
     void handlePulse();
     void sendPulse();
     void feedback();
@@ -42,6 +44,8 @@ class Wheel{
     int dt=0; // mu_s
     Wheel_Info info;
     float d_theta=0.0;
+
+    // const float wel_radius=23.75; // mm
 
     private:
     // variables for setup
@@ -77,7 +81,7 @@ class Wheel{
     // Wheel_Info info;
     // float d_theta=0.0;
     const float duty_scale=1000.0;
-    const float wel_radius=23.75; // mm
+    // const float wel_radius=23.75; // mm
     const float pi=3.14159265358979323846;
     
 };

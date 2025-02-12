@@ -31,6 +31,35 @@ void Wheel::control(int rpm, int direction){
     // no load, input voltage=6.3
     dir=direction;
     if(rpm==0) ctrl_high=1500;
+    else {
+        if(dir==1){
+            if(rpm>=140) ctrl_high=1280;
+            else ctrl_high=1480-rpm*float(1480-1280)/140.0;
+        }
+        else if(dir==-1){
+            if(rpm>=140) ctrl_high=1720;
+            else ctrl_high=1525+abs(rpm)*float(1720-1525)/140.0;
+        }
+    }
+    ctrl_low=20000-ctrl_high;
+    cpin_state=LOW;
+    if(mu_s!=ctrl_high){
+        timerAlarmWrite(timer, ctrl_high, true);
+        mu_s=ctrl_high;
+    }
+}
+
+// @brief rotate to given angle by given speed, haven't worked
+void Wheel::thetaControl(int rpm, int direction, int theta){
+    // no load, input voltage=6.3
+
+    if(angle>=theta) {
+        Serial.println("rotate complete");
+        return;
+    }
+    if_deg=true;
+    dir=direction;
+    if(rpm==0) ctrl_high=1500;
     if(dir==1){
         if(rpm>=140) ctrl_high=1280;
         else ctrl_high=1480-rpm*float(1480-1280)/140.0;
@@ -45,31 +74,7 @@ void Wheel::control(int rpm, int direction){
         timerAlarmWrite(timer, ctrl_high, true);
         mu_s=ctrl_high;
     }
-}
-
-// @brief rotate to given angle by given speed, haven't worked
-void Wheel::thetaControl(int rpm, int theta){
-    // no load, input voltage=6.3
-
-    // if(angle>=theta) return;
-    if_deg=true;
-    spe_deg=theta;
-
-    if(rpm==0) ctrl_high=1500;
-    else if(rpm>0){
-        if(rpm>140) ctrl_high=1280;
-        else ctrl_high=1480-rpm*float(1480-1280)/140.0;
-    }
-    else{
-        if(rpm<-140) ctrl_high=1720;
-        else ctrl_high=1520+abs(rpm)*float(1720-1520)/140.0;
-    }
-    ctrl_low=20000-ctrl_high;
-    cpin_state=LOW;
-    if(mu_s!=ctrl_high){
-        timerAlarmWrite(timer, ctrl_high, true);
-        mu_s=ctrl_high;
-    }
+    feedback();
 }
 
 void Wheel::handlePulse(){
@@ -102,7 +107,6 @@ void Wheel::sendPulse(){
 
 // @brief read duty cycle to compute angle
 void Wheel::feedback(){
-    // float d_theta=0.0;
     duty_cycle=float(fb_high)/float(period);
     theta=(float)((duty_cycle*duty_scale-MIN_DC)*UNITS_FC)/(MAX_DC-MIN_DC+1);
     
@@ -117,7 +121,6 @@ void Wheel::feedback(){
 
     if(min(abs(theta-prev_theta), abs(360-(theta-prev_theta)))<=1.0) {
         prev_theta=theta;
-        // Serial.print("d_theta error");
         return;
     }
 
@@ -128,33 +131,11 @@ void Wheel::feedback(){
     else d_theta=theta-prev_theta;
 
     dt=int(micros()-info.stamp);
-    // Serial.print(micros());
-    // Serial.print("  ");
-    // Serial.print(info.stamp);
-    // Serial.print("  ");
-    // Serial.println(dt);
     info.stamp=micros();
 
-    if(abs(wel_radius*d_theta*pi*1000000/(dt*180.0))-abs(info.linear_vel)>=80) {
-        // Serial.print("velocity error");
-        return;
+    if(!(abs(wel_radius*d_theta*pi*1000000/(dt*180.0))-abs(info.linear_vel)>=80)) {
+        info.linear_vel=wel_radius*d_theta*pi*1000000/(dt*180.0);
     }
-    else info.linear_vel=wel_radius*d_theta*pi*1000000/(dt*180.0);
 
-    // if(angle>=spe_deg&&if_deg) deg_ok=true;
-    if_data=false;
-    // if_deg=false;
-    // Serial.print("prev_theta=");
-    // Serial.print(prev_theta);
-    // Serial.print(", theta: ");
-    // Serial.print(theta);
-    // Serial.print("d_theta=");
-    // Serial.print(d_theta);
-    // Serial.print(", velocity=");
-    // Serial.print(info.linear_vel);
-    // Serial.print(", stamp=");
-    // Serial.print(info.stamp);
-    // Serial.print(", dt=");
-    // Serial.println(dt);
     prev_theta=theta;
 }
