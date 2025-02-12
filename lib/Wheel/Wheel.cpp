@@ -18,7 +18,7 @@ hw_timer_t* Wheel::getTim(){
     return timer;
 }
 
-Wheel_Info Wheel::getCarInfo(){
+Wheel_Info Wheel::getWelInfo(){
     return info;
 }
 
@@ -49,34 +49,14 @@ void Wheel::control(int rpm, int direction){
     }
 }
 
-// @brief rotate to given angle by given speed, haven't worked
-void Wheel::thetaControl(int rpm, int direction, int theta){
-    // no load, input voltage=6.3
 
-    if(angle>=theta) {
-        Serial.println("rotate complete");
-        return;
-    }
-    if_deg=true;
-    dir=direction;
-    if(rpm==0) ctrl_high=1500;
-    if(dir==1){
-        if(rpm>=140) ctrl_high=1280;
-        else ctrl_high=1480-rpm*float(1480-1280)/140.0;
-    }
-    else if(dir==-1){
-        if(rpm>=140) ctrl_high=1720;
-        else ctrl_high=1520+abs(rpm)*float(1720-1520)/140.0;
-    }
-    ctrl_low=20000-ctrl_high;
-    cpin_state=LOW;
-    if(mu_s!=ctrl_high){
-        timerAlarmWrite(timer, ctrl_high, true);
-        mu_s=ctrl_high;
-    }
-    feedback();
-}
-
+/*
+ *   ___
+ *  |   |          |
+ *  |   |__________|
+ *      ^false     ^true
+ */
+// @brief called in pin change interrupt cllback, detect rising/falling edge
 void Wheel::handlePulse(){
     portENTER_CRITICAL_ISR(&timer_mux);
 
@@ -94,18 +74,18 @@ void Wheel::handlePulse(){
     portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
+// @brief called in timer callback, for sending high/low signal
 void Wheel::sendPulse(){
     portENTER_CRITICAL_ISR(&timer_mux);
 
     cpin_state=!cpin_state;
     digitalWrite(ctrl_pin, cpin_state);
     timerAlarmWrite(timer, cpin_state?ctrl_high: ctrl_low, true);
-    // timerAlarmEnable(timer);
 
     portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
-// @brief read duty cycle to compute angle
+// @brief calculate duty cycle, theta and veocity. Get time stamp
 void Wheel::feedback(){
     duty_cycle=float(fb_high)/float(period);
     theta=(float)((duty_cycle*duty_scale-MIN_DC)*UNITS_FC)/(MAX_DC-MIN_DC+1);
@@ -119,11 +99,14 @@ void Wheel::feedback(){
     if(turns>=0) angle=(turns*UNITS_FC)+theta;
     else if(turns<0) angle=((turns+1)*UNITS_FC)-(UNITS_FC-theta);
 
+    // filter measurement noise
     if(min(abs(theta-prev_theta), abs(360-(theta-prev_theta)))<=1.0) {
         prev_theta=theta;
         return;
     }
 
+    // angle limit checking 
+    // check whether direction of angle difference is the same as given direction
     if(dir*(theta-prev_theta)<0){
         if(dir==1) d_theta=max(theta-prev_theta, 360+(theta-prev_theta));
         else if(dir==-1) d_theta=-min(theta-prev_theta, 360-(theta-prev_theta));
@@ -133,6 +116,7 @@ void Wheel::feedback(){
     dt=int(micros()-info.stamp);
     info.stamp=micros();
 
+    // filter unreasonable velocity
     if(!(abs(wel_radius*d_theta*pi*1000000/(dt*180.0))-abs(info.linear_vel)>=80)) {
         info.linear_vel=wel_radius*d_theta*pi*1000000/(dt*180.0);
     }

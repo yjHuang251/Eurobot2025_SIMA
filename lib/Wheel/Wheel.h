@@ -2,7 +2,6 @@
 #define WHEEL_H
 
 #include <Arduino.h>
-#include <iostream>
 
 #define UNITS_FC 360
 #define DUTY_SCALE 1000
@@ -11,7 +10,7 @@
 #define Q1_MAX 0.25*UNITS_FC
 #define Q4_MIN 0.75*UNITS_FC
 
-const double wel_radius=23.75; // mm
+const float wel_radius=23.75; // mm
 
 enum TIM_NUMBER{
     TIM_NUM_L=0,
@@ -28,31 +27,18 @@ class Wheel{
     Wheel(uint8_t, uint8_t, int);
     uint8_t EXTIpin();
     hw_timer_t* getTim();
-    Wheel_Info getCarInfo();
+    Wheel_Info getWelInfo();
     bool getIfData();
     void control(int, int);
-    void thetaControl(int, int, int);
     void handlePulse();
     void sendPulse();
     void feedback();
-
-    bool deg_ok=false;
-
-    float theta=0.0; // [0, 360), deg
-    int angle=0; // accumulated, deg
-    float prev_theta=0.0; // deg
-    int dt=0; // mu_s
-    Wheel_Info info;
-    float d_theta=0.0;
-
-    // const float wel_radius=23.75; // mm
 
     private:
     // variables for setup
     uint8_t ctrl_pin;
     uint8_t fb_pin;
     hw_timer_t *timer=NULL;
-
     portMUX_TYPE timer_mux=portMUX_INITIALIZER_UNLOCKED;
 
     // variables for control
@@ -74,14 +60,13 @@ class Wheel{
     // variables for feedback
     float duty_cycle=0.0;
     int turns=0;
-    // float theta=0.0; // [0, 360), deg
-    // int angle=0; // accumulated, deg
-    // int prev_theta=0; // deg
-    // int dt=0; // mu_s
-    // Wheel_Info info;
-    // float d_theta=0.0;
+    float theta=0.0; // [0, 360), deg
+    int angle=0; // accumulated, deg
+    float prev_theta=0.0; // deg
+    int dt=0; // mu_s
+    Wheel_Info info;
+    float d_theta=0.0;
     const float duty_scale=1000.0;
-    // const float wel_radius=23.75; // mm
     const float pi=3.14159265358979323846;
     
 };
