@@ -29,7 +29,7 @@ class Wheel{
     hw_timer_t* getTim();
     Wheel_Info getWelInfo();
     bool getIfData();
-    void control(int, int);
+    void control(float, int);
     void handlePulse();
     void sendPulse();
     void feedback();

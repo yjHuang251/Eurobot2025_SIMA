@@ -27,7 +27,7 @@ bool Wheel::getIfData(){
 }
 
 // @brief rotate by given speed
-void Wheel::control(int rpm, int direction){
+void Wheel::control(float rpm, int direction){
     // no load, input voltage=6.3
     dir=direction;
     if(rpm==0) ctrl_high=1500;

@@ -5,6 +5,11 @@
 #include "Wheel.h"
 #include "math.h"
 
+struct Vec{
+    double i;
+    double j;
+};
+
 class Chassis{
     public:
     Chassis(Wheel*, Wheel*);
@@ -13,6 +18,7 @@ class Chassis{
     float getX();
     float getY();
     float getTheta();
+    Vec getHeading();
 
     private:
     Wheel* left_wheel;
@@ -22,6 +28,7 @@ class Chassis{
     float x=0.0; // mm
     float y=0.0; // mm
     float theta=0.0; // rad
+    Vec heading;
     unsigned long now=0; // mu_s
     unsigned long last=0;
     int dt=0;

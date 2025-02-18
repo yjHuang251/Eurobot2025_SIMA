@@ -14,9 +14,11 @@ void Chassis::updatePose(){
     dt=float(int(now-last));
 
     theta+=omega*dt/1000000.00;
-    if(theta<=0.001) theta=0;
-    x+=v_x*cos(theta)*dt/1000000.00;
-    y+=v_x*sin(theta)*dt/1000000.00;
+    // if(theta<0.001) theta=0;
+    heading.i=cos(theta);
+    heading.j=sin(theta);
+    x+=v_x*heading.i*dt/1000000.00;
+    y+=v_x*heading.j*dt/1000000.00;
 
     last=now;
 }
@@ -31,4 +33,8 @@ float Chassis::getY(){
 
 float Chassis::getTheta(){
     return theta;
+}
+
+Vec Chassis::getHeading(){
+    return heading;
 }
